@@ -3,7 +3,6 @@ const path = require("path");
 
 const app = express();
 
-// serve the public folder
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
@@ -11,7 +10,7 @@ res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
 app.get("/status", (req, res) => {
-res.json({ status: "online" });
+res.send("Server is running");
 });
 
 const PORT = process.env.PORT || 8080;
