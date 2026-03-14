@@ -2,11 +2,11 @@
   "name": "sms-gateway",
   "version": "1.0.0",
   "description": "Node.js SMS Gateway with Firebase",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node server.js"
   },
-  "author": "sms-gateway",
+  "author": "radhakrishnan",
   "license": "ISC",
   "dependencies": {
     "express": "^4.18.2",
