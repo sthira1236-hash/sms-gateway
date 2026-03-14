@@ -1,24 +1,15 @@
 {
-  "name": "sms-gateway",
-  "version": "1.0.0",
-  "description": "Node.js SMS Gateway server",
-  "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "keywords": [
-    "sms",
-    "gateway",
-    "nodejs",
-    "express"
-  ],
-  "author": "radhakrishnan",
-  "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "cors": "^2.8.5"
-  }
+"name": "sms-gateway",
+"version": "1.0.0",
+"description": "SMS Gateway Dashboard",
+"main": "server.js",
+"scripts": {
+"start": "node server.js"
+},
+"engines": {
+"node": ">=18"
+},
+"dependencies": {
+"express": "^4.18.2"
+}
 }
