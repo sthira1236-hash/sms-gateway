@@ -6,6 +6,8 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// serve dashboard
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
@@ -13,11 +15,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/status", (req, res) => {
-  res.json({ status: "online" });
+  res.json({ status: "online", service: "sms-gateway" });
 });
 
+// IMPORTANT: Railway port
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log("Server running on port " + PORT);
+  console.log(`Server running on port ${PORT}`);
 });
