@@ -1,26 +1,21 @@
 const express = require("express");
-const cors = require("cors");
-const path = require("path");
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
-
-// serve dashboard
-app.use(express.static(path.join(__dirname, "public")));
-
+/* Root route */
 app.get("/", (req, res) => {
-  res.send("SMS Gateway Server Running");
+  res.send("SMS Gateway Running");
 });
 
+/* Health check route */
 app.get("/status", (req, res) => {
-  res.json({ status: "online", service: "sms-gateway" });
+  res.json({ status: "online" });
 });
 
-// IMPORTANT: Railway port
+/* Railway port */
 const PORT = process.env.PORT || 3000;
 
+/* IMPORTANT: bind to 0.0.0.0 */
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log("Server running on port " + PORT);
 });
