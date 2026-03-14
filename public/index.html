@@ -1,0 +1,78 @@
+const express = require("express");
+const admin = require("firebase-admin");
+const path = require("path");
+const cors = require("cors");
+
+const app = express();
+
+// Railway provides the PORT automatically
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+app.use(cors());
+
+// Firebase Admin
+const serviceAccount = require("./sms-gateway-ccf82-firebase-adminsdk.json");
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com"
+});
+
+const db = admin.database();
+
+// Serve dashboard
+app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
+
+// Health check
+app.get("/status", (req, res) => {
+  res.json({
+    status: "SMS Gateway Running",
+    time: new Date()
+  });
+});
+
+// API: Add SMS to queue
+app.post("/send-sms", async (req, res) => {
+  try {
+    const { number, message } = req.body;
+
+    const sms = {
+      number,
+      message,
+      status: "pending",
+      createdAt: Date.now()
+    };
+
+    const ref = await db.ref("sms_queue").push(sms);
+
+    res.json({
+      success: true,
+      id: ref.key
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// API: get SMS queue
+app.get("/sms-list", async (req, res) => {
+  const snapshot = await db.ref("sms_queue").once("value");
+  res.json(snapshot.val());
+});
+
+// API: clear queue
+app.post("/clear-sms", async (req, res) => {
+  await db.ref("sms_queue").remove();
+  res.json({ success: true });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log("SMS Gateway server running on port", PORT);
+});
