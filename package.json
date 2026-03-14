@@ -1,18 +1,16 @@
 {
-  "name": "sms-gateway-project-folder",
+  "name": "sms-gateway",
   "version": "1.0.0",
-  "description": "",
+  "description": "Node.js SMS Gateway with Firebase",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
-  "keywords": [],
-  "author": "",
+  "author": "sms-gateway",
   "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-    "body-parser": "^2.2.2",
-    "cors": "^2.8.6",
-    "express": "^5.2.1"
+    "express": "^4.18.2",
+    "firebase-admin": "^12.0.0",
+    "cors": "^2.8.5"
   }
 }
