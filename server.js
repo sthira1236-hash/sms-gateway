@@ -1,12 +1,11 @@
 const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
 const admin = require("firebase-admin");
+const path = require("path");
 
-/* FIREBASE KEY */
+// Firebase service account
 const serviceAccount = require("./sms-gateway-ccf82-firebase-adminsdk.json");
 
-/* FIREBASE INIT */
+// Initialize Firebase
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://sms-gateway-ccf82-default-rtdb.asia-southeast1.firebasedatabase.app"
@@ -14,141 +13,130 @@ admin.initializeApp({
 
 const db = admin.database();
 
-/* EXPRESS SERVER */
 const app = express();
+app.use(express.json());
 
-app.use(cors());
-app.use(express.static("public"));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// Serve dashboard
+app.use(express.static(path.join(__dirname, "public")));
 
-/* HOME PAGE */
+// Root route
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-/* SEND SINGLE SMS */
+/*
+=================================
+Send SMS API
+=================================
+POST /send-sms
+Body:
+{
+  "number": "9876543210",
+  "message": "Hello"
+}
+*/
 app.post("/send-sms", async (req, res) => {
-
-  const number = req.body.number;
-  const message = req.body.message;
-
-  if (!number || !message) {
-    return res.send("Number or message missing");
-  }
-
-  const smsData = {
-    number: number,
-    message: message,
-    status: "pending",
-    time: Date.now()
-  };
-
   try {
+    const { number, message } = req.body;
 
-    const ref = db.ref("sms_queue");
-
-    await ref.push(smsData);
-
-    console.log("Single SMS queued");
-    console.log("Number:", number);
-    console.log("Message:", message);
-
-    res.send("SMS added to queue");
-
-  } catch (error) {
-
-    console.log("Firebase Error:", error);
-    res.send("Error saving SMS");
-
-  }
-
-});
-
-/* SEND BULK SMS */
-app.post("/send-bulk", async (req, res) => {
-
-  const numbers = req.body.numbers;
-  const message = req.body.message;
-
-  if (!numbers || !message) {
-    return res.send("Numbers or message missing");
-  }
-
-  const numberList = numbers.split("\n");
-
-  const ref = db.ref("sms_queue");
-
-  try {
-
-    for (let num of numberList) {
-
-      num = num.trim();
-
-      if (num.length > 5) {
-
-        const smsData = {
-          number: num,
-          message: message,
-          status: "pending",
-          time: Date.now()
-        };
-
-        await ref.push(smsData);
-
-        console.log("Bulk SMS queued:", num);
-      }
-
+    if (!number || !message) {
+      return res.status(400).json({
+        success: false,
+        error: "Number and message required"
+      });
     }
 
-    res.send("Bulk SMS queued successfully");
+    const sms = {
+      number: number,
+      message: message,
+      status: "pending",
+      time: Date.now()
+    };
+
+    await db.ref("sms").push(sms);
+
+    console.log("SMS queued:", sms);
+
+    res.json({
+      success: true,
+      message: "SMS added to queue"
+    });
 
   } catch (err) {
-
-    console.log("Bulk Error:", err);
-    res.send("Bulk SMS failed");
-
+    console.error(err);
+    res.status(500).json({ success: false, error: err.message });
   }
-
 });
 
-/* CLEAR SMS QUEUE */
-app.post("/clear-queue", async (req, res) => {
-
+/*
+=================================
+Bulk SMS API
+=================================
+POST /send-bulk
+Body:
+{
+  "numbers": ["9876543210","9123456789"],
+  "message": "Hello"
+}
+*/
+app.post("/send-bulk", async (req, res) => {
   try {
+    const { numbers, message } = req.body;
 
-    await db.ref("sms_queue").remove();
+    if (!numbers || !message) {
+      return res.status(400).json({
+        success: false,
+        error: "Numbers and message required"
+      });
+    }
 
-    console.log("SMS queue cleared");
+    for (const number of numbers) {
+      await db.ref("sms").push({
+        number,
+        message,
+        status: "pending",
+        time: Date.now()
+      });
+    }
 
-    res.send("SMS queue cleared");
+    res.json({
+      success: true,
+      message: "Bulk SMS queued"
+    });
 
   } catch (err) {
-
-    console.log("Error clearing queue:", err);
-
-    res.send("Failed to clear queue");
-
+    console.error(err);
+    res.status(500).json({ success: false, error: err.message });
   }
-
 });
 
-/* FIREBASE LISTENER (LOG ONLY) */
-const queueRef = db.ref("sms_queue");
-
-queueRef.on("child_added", (snapshot) => {
-
-  const sms = snapshot.val();
-
-  console.log("New SMS in Firebase");
-  console.log("Number:", sms.number);
-  console.log("Message:", sms.message);
-
+/*
+=================================
+Get SMS logs
+=================================
+*/
+app.get("/logs", async (req, res) => {
+  const snapshot = await db.ref("sms").once("value");
+  res.json(snapshot.val());
 });
 
-/* START SERVER */
-const PORT = 3000;
+/*
+=================================
+Clear SMS queue
+=================================
+*/
+app.post("/clear", async (req, res) => {
+  await db.ref("sms").remove();
+  res.json({ success: true, message: "Queue cleared" });
+});
+
+/*
+=================================
+Start server (Railway compatible)
+=================================
+*/
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("Server running on port " + PORT);
+  console.log("SMS Gateway server running on port " + PORT);
 });
