@@ -1,41 +1,70 @@
 <!DOCTYPE html>
+
 <html>
 <head>
 <title>SMS Gateway Dashboard</title>
 <style>
-body{font-family:Arial;background:#f2f2f2;padding:40px}
-.container{background:#fff;padding:30px;border-radius:8px;max-width:700px;margin:auto}
-h1{margin-top:0}
-button{padding:10px 15px;border:none;background:#007bff;color:#fff;border-radius:4px;cursor:pointer}
-button:hover{background:#0056b3}
-</style>
+body{
+font-family: Arial;
+background:#f2f2f2;
+padding:40px;
+}
+
+.container{
+background:white;
+padding:30px;
+border-radius:8px;
+max-width:900px;
+margin:auto;
+}
+
+button{
+padding:10px 20px;
+background:#007bff;
+color:white;
+border:none;
+cursor:pointer;
+}
+
+table{
+width:100%;
+border-collapse: collapse;
+margin-top:20px;
+}
+
+th,td{
+border:1px solid #ccc;
+padding:8px;
+} </style>
+
 </head>
 
 <body>
 
 <div class="container">
+
 <h1>SMS Gateway Dashboard</h1>
 
-<p>Status: <b id="status">Checking...</b></p>
+<p>Server status test:</p>
 
-<button onclick="checkStatus()">Check Server Status</button>
+<button onclick="checkStatus()">Check Server</button>
+
+<p id="result"></p>
 
 </div>
 
 <script>
 
 function checkStatus(){
-fetch('/status')
-.then(res=>res.json())
-.then(data=>{
-document.getElementById("status").innerText=data.status
-})
-.catch(()=>{
-document.getElementById("status").innerText="Server not responding"
-})
-}
 
-checkStatus()
+fetch("/status")
+.then(res => res.json())
+.then(data => {
+document.getElementById("result").innerText =
+"Server status: " + data.status;
+});
+
+}
 
 </script>
 
