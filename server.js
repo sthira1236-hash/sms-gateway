@@ -3,9 +3,7 @@ const path = require("path");
 
 const app = express();
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
+// serve the public folder
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
@@ -16,11 +14,7 @@ app.get("/status", (req, res) => {
 res.json({ status: "online" });
 });
 
-app.post("/clear-queue", (req, res) => {
-res.send("Queue cleared");
-});
-
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 app.listen(PORT, "0.0.0.0", () => {
 console.log("Server running on port " + PORT);
